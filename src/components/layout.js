@@ -1,6 +1,6 @@
 import React from 'react'
 import Header from './header'
-import { createGlobalStyle } from 'styled-components'
+import styled, { createGlobalStyle } from 'styled-components'
 
 const Global = createGlobalStyle`
 * {
@@ -27,12 +27,17 @@ line-height: 1.1;
 }
 `
 
+const StyledMain = styled.main`
+   margin: 2rem auto 4rem;
+   max-width: 90vw;
+   width: 750px;
+`
 const Layout = ({ children }) => {
    return (
       <>
          <Global />
          <Header />
-         <main>{children}</main>
+         <StyledMain>{children}</StyledMain>
       </>
    )
 }
