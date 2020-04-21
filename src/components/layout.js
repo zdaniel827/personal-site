@@ -1,6 +1,7 @@
 import React from 'react'
 import Header from './header'
 import styled, { createGlobalStyle } from 'styled-components'
+import Footer from './footer'
 
 const Global = createGlobalStyle`
 * {
@@ -38,6 +39,7 @@ const Layout = ({ children }) => {
          <Global />
          <Header />
          <StyledMain>{children}</StyledMain>
+         <Footer />
       </>
    )
 }
