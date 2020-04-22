@@ -1,118 +1,70 @@
-import React, { useReducer } from 'react'
+import React, { useState } from 'react'
+import { navigate } from 'gatsby-link'
 
-const INITIAL_STATE = {
-   name: '',
-   email: '',
-   body: '',
-   status: 'IDLE',
-}
-
-const reducer = (state, action) => {
-   switch (action.type) {
-      case 'updateFieldValue':
-         return { ...state, [action.field]: action.value }
-      case 'updateStatus':
-         return { ...state, status: action.status }
-      case 'rest':
-      default:
-         return INITIAL_STATE
-   }
+function encode(data) {
+   return Object.keys(data)
+      .map(key => encodeURIComponent(key) + '=' + encodeURIComponent(data[key]))
+      .join('&')
 }
 
 const ContactForm = () => {
-   const [state, dispatch] = useReducer(reducer, INITIAL_STATE)
+   const [state, setState] = useState({})
 
-   const setStatus = status => dispatch({ type: 'updateStatus', status })
-
-   const updateFieldValue = field => event => {
-      dispatch({
-         type: 'updateFieldValue',
-         field,
-         value: event.target.value,
-      })
+   const handleChange = event => {
+      setState({ ...state, [event.target.name]: event.target.value })
    }
 
    const handleSubmit = event => {
       event.preventDefault()
-      setStatus('PENDING')
+      console.log(state)
+      const form = event.target
 
-      fetch('/api/contact', {
+      fetch('/', {
          method: 'POST',
-         body: JSON.stringify(state),
+         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+         body: encode({
+            'form-name': form.getAttribute('name'),
+            ...state,
+         }),
       })
-         .then(response => response.json())
-         .then(response => {
-            setStatus('SUCCESS')
-            console.log(response)
-         })
-         .catch(error => {
-            console.error(error)
-            setStatus('ERROR')
-         })
-   }
-
-   if (state.status === 'SUCCESS') {
-      return (
-         <p>
-            Message sent!
-            <button type="reset" onClick={() => dispatch({ type: 'reset' })}>
-               Reset Form
-            </button>
-         </p>
-      )
+         .then(() => navigate(form.getAttribute('action')))
+         .catch(error => alert(error))
    }
 
    return (
-      <>
-         {state.status === 'ERROR' && (
-            <p>Something went wrong! Please try again</p>
-         )}
-         <form
-            name="contact"
-            method="post"
-            data-netlify="true"
-            data-netlify-honeypot="bot-field"
-            onSubmit={handleSubmit}
-         >
-            <input type="hidden" name="form-name" value="contact" />
-            <p hidden>
-               <label>
-                  Don’t fill this out:{' '}
-                  <input
-                     name="bot-field"
-                     onChange={updateFieldValue('email')}
-                  />
-               </label>
-            </p>
-            <label>
-               Name
-               <input
-                  type="text"
-                  name="name"
-                  value={state.name}
-                  onChange={updateFieldValue('name')}
-               />
-            </label>
-            <label>
-               Email
-               <input
-                  type="email"
-                  name="email"
-                  value={state.email}
-                  onChange={updateFieldValue('email')}
-               />
-            </label>
-            <label>
-               Body
-               <textarea
-                  name="body"
-                  value={state.body}
-                  onChange={updateFieldValue('body')}
-               />
-            </label>
-            <button>Send</button>
-         </form>
-      </>
+      <form
+         name="contact"
+         method="post"
+         action="/thanks"
+         data-netlify="true"
+         data-netlify-honeypot="bot-field"
+         onSubmit={handleSubmit}
+      >
+         <input type="hidden" name="form-name" value="contact" />
+         <label>
+            Name
+            <input
+               type="text"
+               name="name"
+               value={state.name}
+               onChange={handleChange}
+            />
+         </label>
+         <label>
+            Email
+            <input
+               type="email"
+               name="email"
+               value={state.email}
+               onChange={handleChange}
+            />
+         </label>
+         <label>
+            Body
+            <textarea name="body" value={state.body} onChange={handleChange} />
+         </label>
+         <button type="submit">Send</button>
+      </form>
    )
 }
 
